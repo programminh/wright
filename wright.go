@@ -12,7 +12,7 @@ import (
 	"github.com/programminh/wright/qpx"
 )
 
-var endpoint = fmt.Sprintf("https://www.googleapis.com/qpxExpress/v1/trips/search?key=%", APIKey)
+var endpoint = fmt.Sprintf("https://www.googleapis.com/qpxExpress/v1/trips/search?key=%s", APIKey)
 
 type Trip struct {
 	AdultCount  int
@@ -58,6 +58,8 @@ func Search(t *Trip) (err error) {
 	}
 
 	prettyprint(t)
+
+	fmt.Println(endpoint)
 
 	if res, err = http.Post(endpoint, "application/json", bytes.NewBuffer(b)); err != nil {
 		fmt.Println(err)
