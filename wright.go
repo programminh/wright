@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/programminh/wright/qpx"
@@ -14,65 +15,41 @@ import (
 
 var endpoint = fmt.Sprintf("https://www.googleapis.com/qpxExpress/v1/trips/search?key=%s", APIKey)
 
-type Trip struct {
-	AdultCount  int
-	Origin      string
-	Destination string
-	Date        time.Time
-}
-
-func (t Trip) MarshalJSON() (b []byte, err error) {
-	req := qpx.Request{}
-	slice := qpx.Slice{
-		Kind:                  "qpxexpress#sliceInput",
-		Origin:                t.Origin,
-		Destination:           t.Destination,
-		Date:                  t.Date.Format("2006-01-02"),
-		MaxStop:               3,
-		MaxConnectionDuration: 300,
-	}
-
-	pass := qpx.Passengers{
-		Kind:       "qpxexpress#passengerCounts",
-		AdultCount: t.AdultCount,
-	}
-
-	req.Request.Solutions = 10
-	req.Request.Slice = []qpx.Slice{slice}
-	req.Request.Passengers = pass
-
-	b, err = json.Marshal(req)
-
-	return
-}
-
-func Search(t *Trip) (err error) {
+func Search(origin, destination, date string) (resp qpx.Response, err error) {
 	var (
-		b   []byte
-		res *http.Response
+		b        []byte
+		res      *http.Response
+		f        *os.File
+		filename = time.Now().Format("2006-01-02_1504.log")
 	)
 
-	if b, err = json.Marshal(t); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+	payload := qpx.NewRequest(origin, destination, date)
+
+	if f, err = os.Create(filepath.Join(os.Getenv("HOME"), "Desktop/wright", filename)); err != nil {
+		return
 	}
 
-	prettyprint(t)
+	if b, err = json.Marshal(payload); err != nil {
+		return
+	}
 
-	fmt.Println(endpoint)
+	PrettyPrint(payload)
 
 	if res, err = http.Post(endpoint, "application/json", bytes.NewBuffer(b)); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		return
 	}
 
-	io.Copy(os.Stdout, res.Body)
+	tee := io.TeeReader(res.Body, f)
+
+	if err = json.NewDecoder(tee).Decode(&resp); err != nil {
+		return
+	}
 	res.Body.Close()
 
 	return
 }
 
-func prettyprint(v interface{}) {
+func PrettyPrint(v interface{}) {
 	b, _ := json.MarshalIndent(v, "", "    ")
 	fmt.Println(string(b))
 }

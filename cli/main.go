@@ -1,18 +1,28 @@
 package main
 
 import (
-	"time"
+	"fmt"
+	"log"
+	"os"
 
 	"github.com/programminh/wright"
+	"github.com/programminh/wright/qpx"
 )
 
 func main() {
-	t := wright.Trip{
-		AdultCount:  2,
-		Origin:      "EDI",
-		Destination: "YUL",
-		Date:        time.Date(2017, time.Month(5), 19, 0, 0, 0, 0, time.UTC),
+	var (
+		res qpx.Response
+		err error
+	)
+
+	if res, err = wright.Search("EDI", "YUL", "2017-05-19"); err != nil {
+		log.Println(err)
+		os.Exit(1)
 	}
 
-	wright.Search(&t)
+	fmt.Printf("Found %d results\n", len(res.Trips.TripOption))
+	wright.PrettyPrint(res.Cheapest())
+	wright.PrettyPrint(res.Mean())
+	fmt.Println(res.Prices())
+
 }
