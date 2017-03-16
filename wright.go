@@ -64,7 +64,7 @@ type attachment struct {
 func slack(origin, destination, date, color string, trip Trip) {
 	msg := message{
 		Username:  "Wright",
-		Channel:   "@sillybruce",
+		Channel:   "#general",
 		IconEmoji: ":google:",
 	}
 
