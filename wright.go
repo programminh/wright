@@ -24,24 +24,26 @@ var green = "#66BB6A"
 var darkgreen = "#1B5E20"
 
 func main() {
+	var dst = "YUL"
+
+	search("EDI", dst, "2017-05-19", green)
+	search("EDI", dst, "2017-05-20", green)
+
+	search("GLA", dst, "2017-05-19", darkgreen)
+	search("GLA", dst, "2017-05-20", darkgreen)
+}
+
+func search(origin, dst, date, color string) {
 	var (
-		edi, gla Trip
-		err      error
-		date     = "2017-05-19"
-		dst      = "YUL"
+		trip Trip
+		err  error
 	)
 
-	if edi, err = qpx.Cheapest("EDI", dst, date); err != nil {
+	if trip, err = qpx.Cheapest(origin, dst, date); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	slack("EDI", dst, date, green, edi)
-
-	if gla, err = qpx.Cheapest("GLA", dst, date); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-	slack("GLA", dst, date, darkgreen, gla)
+	slack(origin, dst, date, color, trip)
 }
 
 type message struct {
