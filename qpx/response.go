@@ -36,7 +36,7 @@ func (to tripOption) Carrier() string {
 }
 
 func (to tripOption) Stops() int {
-	return len(to.Slice[0].Segment)
+	return len(to.Slice[0].Segment) - 1
 }
 
 func (to tripOption) Price() (price float64) {
