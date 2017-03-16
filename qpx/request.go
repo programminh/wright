@@ -1,6 +1,6 @@
 package qpx
 
-type Passengers struct {
+type passengers struct {
 	Kind              string `json:"kind"`
 	AdultCount        int    `json:"adultCount"`
 	ChildCount        int    `json:"childCount"`
@@ -9,7 +9,7 @@ type Passengers struct {
 	SeniorCount       int    `json:"seniorCount"`
 }
 
-type RequestSlice struct {
+type requestSlice struct {
 	Kind                   string `json:"string"`
 	Origin                 string `json:"origin"`
 	Destination            string `json:"destination"`
@@ -27,10 +27,10 @@ type RequestSlice struct {
 	ProhibitedCarrier []string `json:"prohibitedCarrier"`
 }
 
-type Request struct {
+type request struct {
 	Request struct {
-		Passengers       Passengers     `json:"passengers"`
-		Slice            []RequestSlice `json:"slice"`
+		Passengers       passengers     `json:"passengers"`
+		Slice            []requestSlice `json:"slice"`
 		MaxPrice         string         `json:"maxPrice"`
 		SaleCountry      string         `json:"saleCountry"`
 		TicketingCountry string         `json:"ticketingCountry"`
@@ -39,9 +39,9 @@ type Request struct {
 	} `json:"request"`
 }
 
-func NewRequest(origin, destination, date string) Request {
-	req := Request{}
-	slice := RequestSlice{
+func newRequest(origin, destination, date string) request {
+	req := request{}
+	slice := requestSlice{
 		Kind:                  "qpxexpress#sliceInput",
 		Origin:                origin,
 		Destination:           destination,
@@ -50,14 +50,14 @@ func NewRequest(origin, destination, date string) Request {
 		MaxConnectionDuration: 300,
 	}
 
-	pass := Passengers{
+	pass := passengers{
 		Kind:       "qpxexpress#passengerCounts",
 		AdultCount: 1,
 	}
 
 	req.Request.SaleCountry = "CA"
 	req.Request.Solutions = 500
-	req.Request.Slice = []RequestSlice{slice}
+	req.Request.Slice = []requestSlice{slice}
 	req.Request.Passengers = pass
 
 	return req

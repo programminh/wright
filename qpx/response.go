@@ -1,61 +1,85 @@
 package qpx
 
 import (
+	"fmt"
 	"log"
-	"os"
 	"sort"
 	"strconv"
+	"time"
 )
 
-type Carrier struct {
+type carrier struct {
 	Code string `json:"code"`
 	Name string `json:"name"`
 }
 
-type ResponseSlice struct {
-	ID       string    `json:"id"`
+type responseSlice struct {
 	Duration int       `json:"duration"`
-	Segment  []Segment `json:"segment"`
+	Segment  []segment `json:"segment"`
 }
 
-type Segment struct {
+type segment struct {
 	Flight struct {
 		Carrier string `json:"carrier"`
 	} `json:"flight"`
 }
 
-type TripOption struct {
-	SaleTotal string          `json:"saleTotal"`
-	Slice     []ResponseSlice `json:"slice"`
+type tripOption struct {
+	CarrierName string
+	ID          string          `json:"id"`
+	SaleTotal   string          `json:"saleTotal"`
+	Slice       []responseSlice `json:"slice"`
 }
 
-func (to TripOption) Price() (price float64) {
+func (to tripOption) Carrier() string {
+	return to.CarrierName
+}
+
+func (to tripOption) Stops() int {
+	return len(to.Slice[0].Segment)
+}
+
+func (to tripOption) Price() (price float64) {
 	var err error
 
 	if price, err = strconv.ParseFloat(to.SaleTotal[3:], 64); err != nil {
-		log.Println("can't parse amount (%s - %s): (%s)", to.SaleTotal, to.SaleTotal[4:], err)
-		os.Exit(1)
+		log.Printf("can't parse amount (%s - %s): (%s)", to.SaleTotal, to.SaleTotal[4:], err)
 	}
 
 	return
 }
 
-type TripOptions []TripOption
+func (to tripOption) Duration() time.Duration {
+	var (
+		d   time.Duration
+		err error
+	)
 
-func (to TripOptions) Len() int           { return len(to) }
-func (to TripOptions) Swap(i, j int)      { to[i], to[j] = to[j], to[i] }
-func (to TripOptions) Less(i, j int) bool { return to[i].Price() < to[j].Price() }
+	if d, err = time.ParseDuration(fmt.Sprintf("%dm", to.Slice[0].Duration)); err != nil {
+		log.Printf("can't parse duration %d", to.Slice[0].Duration)
+	}
 
-type Response struct {
+	return d
+}
+
+type tripOptions []tripOption
+
+func (to tripOptions) Len() int           { return len(to) }
+func (to tripOptions) Swap(i, j int)      { to[i], to[j] = to[j], to[i] }
+func (to tripOptions) Less(i, j int) bool { return to[i].Price() < to[j].Price() }
+
+type response struct {
 	Trips struct {
-		Carrier    []Carrier   `json:"carrier"`
-		TripOption TripOptions `json:"tripOption"`
+		Data struct {
+			Carrier []carrier `json:"carrier"`
+		} `json:"data"`
+		TripOption tripOptions `json:"tripOption"`
 	} `json:"trips"`
 
 	sorted bool
 }
 
-func (r *Response) sort() {
+func (r *response) sort() {
 	if r.sorted {
 		return
 	}
@@ -65,13 +89,17 @@ func (r *Response) sort() {
 	sort.Sort(r.Trips.TripOption)
 }
 
-func (r *Response) Cheapest() TripOption {
-	r.sort()
+func (r *response) Cheapest() tripOption {
+	// Assume the carrier name is the first flight
+	to := r.Trips.TripOption[0]
+	name := to.Slice[0].Segment[0].Flight.Carrier
 
-	return r.Trips.TripOption[0]
+	to.CarrierName = r.Carrier(name)
+
+	return to
 }
 
-func (r *Response) Prices() []float64 {
+func (r *response) Prices() []float64 {
 	arr := make([]float64, len(r.Trips.TripOption))
 
 	for i, trip := range r.Trips.TripOption {
@@ -81,8 +109,12 @@ func (r *Response) Prices() []float64 {
 	return arr
 }
 
-func (r *Response) Mean() TripOption {
-	r.sort()
+func (r *response) Carrier(s string) string {
+	for _, c := range r.Trips.Data.Carrier {
+		if s == c.Code {
+			return c.Name
+		}
+	}
 
-	return r.Trips.TripOption[len(r.Trips.TripOption)/2]
+	return ""
 }
