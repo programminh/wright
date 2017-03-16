@@ -40,7 +40,7 @@ func search(origin, dst, date, color string) {
 	)
 
 	if trip, err = qpx.Cheapest(origin, dst, date); err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		os.Exit(1)
 	}
 	slack(origin, dst, date, color, trip)
