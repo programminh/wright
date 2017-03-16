@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"os"
 )
 
 func Cheapest(origin, destination, date string) (to tripOption, err error) {
@@ -21,7 +22,11 @@ func Cheapest(origin, destination, date string) (to tripOption, err error) {
 		return
 	}
 
-	defer f.Close()
+	defer func() {
+		if f != os.Stdout {
+			f.Close()
+		}
+	}()
 
 	w := io.MultiWriter(buf, f)
 
