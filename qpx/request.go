@@ -56,7 +56,7 @@ func newRequest(origin, destination, date string) request {
 	}
 
 	req.Request.SaleCountry = "CA"
-	req.Request.Solutions = 500
+	req.Request.Solutions = 50
 	req.Request.Slice = []requestSlice{slice}
 	req.Request.Passengers = pass
 
