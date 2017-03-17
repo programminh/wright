@@ -26,9 +26,6 @@ var darkgreen = "#1B5E20"
 func main() {
 	var dst = "YUL"
 
-	search("EDI", dst, "2017-05-19", green)
-	search("EDI", dst, "2017-05-20", green)
-
 	search("GLA", dst, "2017-05-19", darkgreen)
 	search("GLA", dst, "2017-05-20", darkgreen)
 }
@@ -73,8 +70,8 @@ func slack(origin, destination, date, color string, trip Trip) {
 	att := attachment{
 		Color:    color,
 		Fallback: fmt.Sprintf("Cheapest flight from %s to %s on %s", origin, destination, date),
-		Title:    fmt.Sprintf("%s to %s on %s - %.2f$", origin, destination, date, trip.Price()),
-		Text:     fmt.Sprintf("Duration %s with %d stops", strings.TrimSuffix(fmt.Sprintf("%s", trip.Duration()), "m0s"), trip.Stops()),
+		Title:    fmt.Sprintf("%s to %s - %.2f$", origin, destination, trip.Price()),
+		Text:     fmt.Sprintf("Duration %s with %d stops on %s", strings.TrimSuffix(fmt.Sprintf("%s", trip.Duration()), "m0s"), trip.Stops(), date),
 		Footer:   fmt.Sprintf("by %s", trip.Carrier()),
 	}
 
