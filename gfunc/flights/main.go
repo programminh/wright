@@ -1,11 +1,8 @@
 package main
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
 	"log"
-	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -42,32 +39,14 @@ func search(origin, dst, date, color string) {
 	}
 	slack(origin, dst, date, color, trip)
 }
-
-type message struct {
-	Username    string       `json:"username"`
-	Channel     string       `json:"channel"`
-	IconEmoji   string       `json:"icon_emoji"`
-	Attachments []attachment `json:"attachments"`
-}
-
-type attachment struct {
-	Fallback   string   `json:"fallback"`
-	Title      string   `json:"title"`
-	Text       string   `json:"text"`
-	Color      string   `json:"color"`
-	Carrier    string   `json:"carrier"`
-	Footer     string   `json:"footer"`
-	MarkdownIn []string `json:"mrkdwn_in"`
-}
-
 func slack(origin, destination, date, color string, trip Trip) {
-	msg := message{
+	msg := slack.Message{
 		Username:  "Wright",
 		Channel:   "#general",
 		IconEmoji: ":google:",
 	}
 
-	att := attachment{
+	att := slack.Attachment{
 		Color:    color,
 		Fallback: fmt.Sprintf("Cheapest flight from %s to %s on %s", origin, destination, date),
 		Title:    fmt.Sprintf("%s to %s - %.2f$", origin, destination, trip.Price()),
@@ -75,13 +54,5 @@ func slack(origin, destination, date, color string, trip Trip) {
 		Footer:   fmt.Sprintf("by %s", trip.Carrier()),
 	}
 
-	msg.Attachments = []attachment{att}
-
-	buf := bytes.NewBuffer(nil)
-
-	json.NewEncoder(buf).Encode(msg)
-
-	if _, err := http.Post(endpoint, "application/json", buf); err != nil {
-		log.Println(err)
-	}
+	msg.Attachments = []slack.Attachment{att}
 }
