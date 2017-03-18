@@ -57,4 +57,6 @@ func echo(origin, destination, date, color string, trip Trip) {
 	}
 
 	msg.Attachments = []slack.Attachment{att}
+
+	slack.Send(msg)
 }
