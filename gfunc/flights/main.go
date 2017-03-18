@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/programminh/wright/qpx"
+	"github.com/programminh/wright/slack"
 )
 
 type Trip interface {
@@ -37,9 +38,10 @@ func search(origin, dst, date, color string) {
 		log.Println(err)
 		os.Exit(1)
 	}
-	slack(origin, dst, date, color, trip)
+	echo(origin, dst, date, color, trip)
 }
-func slack(origin, destination, date, color string, trip Trip) {
+
+func echo(origin, destination, date, color string, trip Trip) {
 	msg := slack.Message{
 		Username:  "Wright",
 		Channel:   "#general",
