@@ -1,1 +1,1 @@
-gcloud beta functions call wright --data '{}'
+gcloud beta functions call flights --data '{}'
